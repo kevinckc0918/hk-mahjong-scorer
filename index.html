@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>香港麻雀計分器</title>
+
+    <!-- ================= PWA & iOS 主畫面設定 ================= -->
+    <meta name="theme-color" content="#b71c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="香港麻雀">
+    
+    <!-- 讀取本地 icon.png -->
+    <link rel="icon" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+
+    <!-- 使用 Font Awesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #fce4ec;
+            --header-bg: #b71c1c; 
+            --card-bg: #ffffff;
+            --text-dark: #333333;
+            --text-red: #b71c1c;
+            --btn-yellow: #fcd55a;
+            --btn-orange: #ffe0b2;
+            --danger: #dc3545;
+            --danger-bg: #fff0f0;
+            --banker-color: #d32f2f;
+            --whatsapp-bg: #25d366;
+        }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-user-select: none;
+        }
+
+        /* ================= 頂部 ================= */
+        .header {
+            background-color: var(--header-bg); color: white; padding: 12px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;
+        }
+        .header h1 { font-size: 18px; font-weight: normal; margin: 0; }
+        .header-btn {
+            background-color: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px;
+            border-radius: 15px; font-size: 14px; cursor: pointer; font-weight: bold;
+        }
+        .header-btn:active { background-color: rgba(255,255,255,0.4); }
+
+        /* ================= 主內容區 ================= */
+        .main-content {
+            flex: 1; position: relative; padding: 8px;
+            overflow-y: auto; display: none; 
+        }
+        .main-content.active { display: flex; flex-direction: column; }
+
+        /* ================= 計分主頁面 ================= */
+        .cross-layout {
+            display: grid; 
+            grid-template-columns: 1fr 1.3fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 8px; width: 100%; flex: 1; 
+            max-width: 600px; margin: 0 auto; min-height: 450px;
+        }
+        .player-card {
+            background: var(--card-bg); border-radius: 12px; border-top: 5px solid var(--header-bg);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
+            padding: 15px 5px 8px 5px; 
+            text-align: center; position: relative;
+            display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+        }
+        .card-header-area { 
+            cursor: pointer; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;
+        }
+        .card-top { grid-column: 2; grid-row: 1; }
+        .card-left { grid-column: 1; grid-row: 2; }
+        .card-right { grid-column: 3; grid-row: 2; }
+        .card-bottom { grid-column: 2; grid-row: 3; }
+
+        .player-title { 
+            color: #666; font-weight: bold; font-size: clamp(13px, 3.5vw, 16px); margin-bottom: 5px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+        }
+        .score-text { 
+            font-size: clamp(32px, 8vh, 60px); 
+            font-weight: 800; color: #1a1a1a; margin: 0; line-height: 1; 
+        }
+        .score-text.positive { color: #2e7d32; }
+        .score-text.negative { color: var(--danger); }
+
+        .card-actions { display: flex; gap: 5px; width: 100%; }
+        .btn-action {
+            flex: 1; padding: 12px 2px; border-radius: 8px; font-weight: bold; font-size: clamp(14px, 4vw, 18px); 
+            border: 1px solid transparent; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #333;
+        }
+        .btn-action:active { transform: scale(0.95); }
+        .btn-win { background-color: var(--btn-yellow); }
+        .btn-zimo { background-color: var(--btn-orange); color: #8d6e3f; }
+
+        .banker-badge {
+            position: absolute; top: 0; left: 0; background: var(--banker-color); color: white;
+            font-size: 11px; padding: 3px 8px; border-radius: 0 0 8px 0; font-weight: bold; display: none; box-shadow: 2px 2px 4px rgba(0,0,0,0.1); z-index: 2;
+        }
+        .is-banker { border-top-color: var(--banker-color); border-top-width: 8px; }
+        .is-banker .banker-badge { display: block; }
+
+        /* ================= 底部導航 ================= */
+        .bottom-nav {
+            background-color: white; display: flex; justify-content: space-around;
+            padding: 12px 0; padding-bottom: calc(env(safe-area-inset-bottom, 15px) + 12px);
+            border-top: 1px solid #ddd; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #888; font-size: 12px; cursor: pointer; width: 20%; padding: 5px 0;
+        }
+        .nav-item i { font-size: 22px; margin-bottom: 5px; } 
+        .nav-item.active { color: var(--header-bg); font-weight: bold; }
+
+        /* ================= Modal ================= */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: flex-end; z-index: 100;
+        }
+        .modal-content {
+            background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; animation: slideUp 0.2s ease-out; max-width: 600px; padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-title { font-size: 18px; font-weight: bold; color: var(--text-dark); }
+        .close-btn { background: #f0f0f0; border: none; width: 30px; height: 30px; border-radius: 15px; font-weight: bold; cursor: pointer; color: #555; }
+        .submit-btn { width: 100%; background: var(--header-bg); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;}
+
+        /* ================= 結算表單 ================= */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; font-size: 14px;}
+        .player-select { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .p-btn { padding: 12px 5px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-weight: bold; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .p-btn.selected { background: var(--header-bg); color: white; border-color: var(--header-bg); }
+        
+        .fan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .fan-btn { 
+            padding: 15px 5px; border: 2px solid #eee; border-radius: 10px; background: #fafafa; cursor: pointer; font-weight: bold; text-align: center;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .fan-btn .fan-num { font-size: 18px; color: var(--text-dark); }
+        .fan-btn .fan-pts { font-size: 12px; color: #999; }
+        .fan-btn.selected { background: #fff5f5; border-color: var(--header-bg); }
+        .fan-btn.selected .fan-num { color: var(--header-bg); }
+
+        .formula-display { background: #fff8f8; border: 1px dashed #ffcdd2; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 14px; color: #444; text-align: left; }
+        .formula-display .highlight { font-weight: bold; color: var(--text-red); font-size: 18px;}
+        .formula-display .score-calc { color: #c62828; font-weight: bold; margin-top: 5px; border-top: 1px solid #ffcdd2; padding-top: 5px;}
+
+        /* ================= 設定 & 其他 ================= */
+        .page-content { padding: 15px; max-width: 500px; margin: 0 auto; width: 100%; padding-bottom: 30px;}
+        .player-settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+        .player-setting-card { background: white; border-radius: 12px; padding: 15px 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .player-setting-card .p-label { color: var(--text-red); font-weight: bold; font-size: 14px; }
+        .player-setting-card .p-emoji { font-size: 40px; line-height: 1; cursor: pointer; }
+        .player-setting-card input { background: #f0f0f0; border: none; padding: 10px; border-radius: 8px; text-align: center; font-size: 15px; width: 90%; font-weight: bold; }
+
+        .danger-zone { background-color: var(--danger-bg); border: 1px solid #f5c6cb; border-radius: 12px; padding: 15px; margin-top: 30px; }
+        .danger-btn { width: 100%; background: white; color: var(--danger); border: 1px solid var(--danger); padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 5px; }
+
+        .history-item { padding: 12px 0; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 4px; }
+        .history-time { color: #999; font-size: 12px; }
+        
+        .leaderboard-card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 15px; margin-bottom: 15px; }
+        .lb-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; font-size: 14px; font-weight: bold;}
+        .lb-scores span.pos { color: #2e7d32; }
+        .lb-scores span.neg { color: var(--danger); }
+        .btn-whatsapp { background-color: var(--whatsapp-bg); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; z-index: 1000; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>香港麻雀計分器</h1>
+        <button class="header-btn" onclick="confirmReset()">完場結算</button>
+    </div>
+
+    <!-- P1: 計分主頁面 -->
+    <div id="page-score" class="main-content active">
+        <div class="cross-layout">
+            <div class="player-card card-top" id="card-3">
+                <div class="banker-badge">莊家</div>
+                <div class="card-header-area" onclick="toggleBanker(3)">
+                    <div class="player-title" id="display-name-3">🐻 北 - 玩家4</div>
+                    <div class="score-text" id="score-3">0</div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-action btn-win" onclick="openScoreModal(3, 'win')">食糊</button>
+                    <button class="btn-action btn-zimo" onclick="openScoreModal(3, 'zimo')">自摸</button>
+                </div>
+            </div>
+            <div class="player-card card-left" id="card-2">
+                <div class="banker-badge">莊家</div>
+                <div class="card-header-area" onclick="toggleBanker(2)">
+                    <div class="player-title" id="display-name-2">🐼 西 - 玩家3</div>
+                    <div class="score-text" id="score-2">0</div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-action btn-win" onclick="openScoreModal(2, 'win')">食糊</button>
+                    <button class="btn-action btn-zimo" onclick="openScoreModal(2, 'zimo')">自摸</button>
+                </div>
+            </div>
+            <div class="player-card card-right is-banker" id="card-0">
+                <div class="banker-badge">莊家</div>
+                <div class="card-header-area" onclick="toggleBanker(0)">
+                    <div class="player-title" id="display-name-0">🐯 東 - 玩家1</div>
+                    <div class="score-text" id="score-0">0</div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-action btn-win" onclick="openScoreModal(0, 'win')">食糊</button>
+                    <button class="btn-action btn-zimo" onclick="openScoreModal(0, 'zimo')">自摸</button>
+                </div>
+            </div>
+            <div class="player-card card-bottom" id="card-1">
+                <div class="banker-badge">莊家</div>
+                <div class="card-header-area" onclick="toggleBanker(1)">
+                    <div class="player-title" id="display-name-1">🐱 南 - 玩家2</div>
+                    <div class="score-text" id="score-1">0</div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-action btn-win" onclick="openScoreModal(1, 'win')">食糊</button>
+                    <button class="btn-action btn-zimo" onclick="openScoreModal(1, 'zimo')">自摸</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- P2: 紀錄頁面 -->
+    <div id="page-history" class="main-content">
+        <div class="page-content">
+            <h3 style="color: var(--text-red); border-bottom: 2px solid var(--text-red); padding-bottom: 10px; margin-bottom: 10px;">流水帳紀錄</h3>
+            <div class="history-list" id="historyList">
+                <div style="text-align: center; color: #888; padding: 20px;">暫無紀錄</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- P3: 戰績頁面 -->
+    <div id="page-leaderboard" class="main-content">
+        <div class="page-content">
+            <h3 style="color: #5d4037; border-bottom: 2px solid #5d4037; padding-bottom: 10px; margin-bottom: 15px;">歷屆完場戰績</h3>
+            <div id="leaderboardList">
+                <div style="text-align: center; color: #888; padding: 20px;">暫無完場戰績</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- P4: 設定頁面 -->
+    <div id="page-settings" class="main-content">
+        <div class="page-content">
+            <div class="player-settings-grid">
+                <div class="player-setting-card" onclick="openEmojiPicker(0)">
+                    <div class="p-label">玩家1 (東)</div>
+                    <div class="p-emoji" id="set-emoji-btn-0">🐯</div>
+                    <input type="text" id="set-name-0" value="玩家1" onchange="updatePlayerNames()" onclick="event.stopPropagation()">
+                </div>
+                <div class="player-setting-card" onclick="openEmojiPicker(1)">
+                    <div class="p-label">玩家2 (南)</div>
+                    <div class="p-emoji" id="set-emoji-btn-1">🐱</div>
+                    <input type="text" id="set-name-1" value="玩家2" onchange="updatePlayerNames()" onclick="event.stopPropagation()">
+                </div>
+                <div class="player-setting-card" onclick="openEmojiPicker(2)">
+                    <div class="p-label">玩家3 (西)</div>
+                    <div class="p-emoji" id="set-emoji-btn-2">🐼</div>
+                    <input type="text" id="set-name-2" value="玩家3" onchange="updatePlayerNames()" onclick="event.stopPropagation()">
+                </div>
+                <div class="player-setting-card" onclick="openEmojiPicker(3)">
+                    <div class="p-label">玩家4 (北)</div>
+                    <div class="p-emoji" id="set-emoji-btn-3">🐻</div>
+                    <input type="text" id="set-name-3" value="玩家4" onchange="updatePlayerNames()" onclick="event.stopPropagation()">
+                </div>
+            </div>
+
+            <div class="danger-zone">
+                <div style="font-weight: bold; margin-bottom: 10px; color: var(--danger);">危險區域</div>
+                <button class="danger-btn" onclick="confirmReset()">🧨 清空分數 (開新局)</button>
+                <button class="danger-btn" onclick="clearLeaderboard()">🗑️ 清除所有歷史戰績</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部導航 -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchPage('score', this)">
+            <i class="fa-solid fa-calculator"></i>
+            <span>計分</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('history', this)">
+            <i class="fa-solid fa-list-ol"></i>
+            <span>紀錄</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('leaderboard', this)">
+            <i class="fa-solid fa-trophy"></i>
+            <span>戰績</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('settings', this)">
+            <i class="fa-solid fa-user-gear"></i>
+            <span>設定</span>
+        </div>
+    </div>
+
+    <!-- Emoji Picker Modal -->
+    <div class="modal-overlay" id="emojiModal" style="display:none; align-items: center; justify-content: center; background: rgba(0,0,0,0.7);">
+        <div class="modal-content" style="border-radius: 16px; width: 90%; max-height: 70vh; overflow-y: auto;">
+             <div class="modal-header">
+                <div class="modal-title">選擇頭像</div>
+                <button class="close-btn" onclick="closeEmojiPicker()">×</button>
+            </div>
+            <div id="emojiGrid" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;"></div>
+        </div>
+    </div>
+
+    <!-- 結算彈窗 -->
+    <div class="modal-overlay" id="scoreModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">選擇番數</div>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 15px; font-size: 18px; color: var(--text-red); font-weight: bold;">
+                <span id="modalWinnerName">🐯 玩家1</span> <span id="modalActionText">食糊</span>
+            </div>
+
+            <div class="form-group" id="loserSection">
+                <label>出衝者 (放槍)：</label>
+                <div class="player-select" id="loserSelectDiv"></div>
+            </div>
+
+            <div class="form-group">
+                <label>番數選擇：</label>
+                <div class="fan-grid" id="fanBtnGrid"></div>
+            </div>
+
+            <div class="formula-display" id="formulaDisplay">請選擇番數</div>
+
+            <button class="submit-btn" onclick="submitScore()">確認計算</button>
+        </div>
+    </div>
+    
+    <div class="toast" id="toastMsg">已儲存</div>
+
+<script>
+    // 香港麻雀 3-8 番得分表
+    const HK_PTS = {
+        3: { win: 8, zimo: 12 },
+        4: { win: 16, zimo: 24 },
+        5: { win: 24, zimo: 36 },
+        6: { win: 32, zimo: 48 },
+        7: { win: 48, zimo: 72 },
+        8: { win: 64, zimo: 96 }
+    };
+
+    let scores = [0, 0, 0, 0]; 
+    let currentBanker = 0;
+    let playerStats = [{win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}];
+    let pastGames = []; 
+    
+    const winds = ['東', '南', '西', '北'];
+    let currentNames = ['玩家1', '玩家2', '玩家3', '玩家4'];
+    let currentEmojis = ['🐯', '🐱', '🐼', '🐻'];
+    
+    let pendingWinner = -1; 
+    let pendingType = ''; 
+    let selectedLoser = -1; 
+    let selectedFan = 3;
+    let editingEmojiIdx = -1;
+
+    const animalEmojis = ['🐯','🐱','🐼','🐻','🦁','🐨','🐮','🐷','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🐺','🐗','🐴','🦄','🐢','🐍','🐙','🦑','🦐','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐅','豹','🦓','🦍','🐘','🦛','🦏','🐪','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','鹿','🐕','🐈','🐇','🐿','🦔'];
+
+    function initEmojiPicker() {
+        const grid = document.getElementById('emojiGrid');
+        grid.innerHTML = animalEmojis.map(e => `<div style="font-size:30px; cursor:pointer; text-align:center;" onclick="selectEmoji('${e}')">${e}</div>`).join('');
+    }
+
+    function openEmojiPicker(idx) { editingEmojiIdx = idx; document.getElementById('emojiModal').style.display = 'flex'; }
+    function closeEmojiPicker() { document.getElementById('emojiModal').style.display = 'none'; }
+    function selectEmoji(emoji) {
+        if(editingEmojiIdx !== -1) {
+            currentEmojis[editingEmojiIdx] = emoji;
+            document.getElementById(`set-emoji-btn-${editingEmojiIdx}`).innerText = emoji;
+            updatePlayerNames();
+        }
+        closeEmojiPicker();
+    }
+
+    function updatePlayerNames() {
+        for(let i=0; i<4; i++) {
+            currentNames[i] = document.getElementById(`set-name-${i}`).value || `玩家 ${i+1}`;
+            document.getElementById(`display-name-${i}`).innerText = `${currentEmojis[i]} ${winds[i]} - ${currentNames[i]}`;
+        }
+        saveData();
+    }
+
+    function saveData() {
+        const data = { scores, currentBanker, currentNames, currentEmojis, playerStats, pastGames, history: document.getElementById('historyList').innerHTML };
+        localStorage.setItem('hkMahjongData', JSON.stringify(data));
+    }
+
+    function loadData() {
+        const saved = localStorage.getItem('hkMahjongData');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                scores = data.scores || [0,0,0,0];
+                currentBanker = data.currentBanker || 0;
+                currentNames = data.currentNames || currentNames;
+                currentEmojis = data.currentEmojis || currentEmojis;
+                playerStats = data.playerStats || playerStats;
+                pastGames = data.pastGames || [];
+                if (data.history) document.getElementById('historyList').innerHTML = data.history;
+            } catch (e) { console.error(e); }
+        }
+        for(let i=0; i<4; i++) {
+            document.getElementById(`set-name-${i}`).value = currentNames[i];
+            document.getElementById(`set-emoji-btn-${i}`).innerText = currentEmojis[i];
+            document.getElementById(`display-name-${i}`).innerText = `${currentEmojis[i]} ${winds[i]} - ${currentNames[i]}`;
+        }
+        updateUI();
+        renderLeaderboards();
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toastMsg'); toast.innerText = msg; toast.style.opacity = '1';
+        setTimeout(() => toast.style.opacity = '0', 1500);
+    }
+
+    function switchPage(pageId, navElement) {
+        document.querySelectorAll('.main-content').forEach(el => el.classList.remove('active'));
+        document.getElementById(`page-${pageId}`).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        navElement.classList.add('active');
+    }
+
+    function toggleBanker(index) {
+        currentBanker = index;
+        updateUI();
+        saveData();
+        addHistory(`👑 <b>${currentNames[index]}</b> 成為新莊家`);
+    }
+
+    function openScoreModal(winnerIdx, type) {
+        pendingWinner = winnerIdx; pendingType = type; selectedLoser = -1; selectedFan = 3;
+        document.getElementById('modalWinnerName').innerText = `${currentEmojis[winnerIdx]} ${currentNames[winnerIdx]}`;
+        
+        const fanGrid = document.getElementById('fanBtnGrid');
+        fanGrid.innerHTML = '';
+        for(let f=3; f<=8; f++) {
+            const btn = document.createElement('div');
+            btn.className = `fan-btn ${f === selectedFan ? 'selected' : ''}`;
+            btn.innerHTML = `<span class="fan-num">${f}番</span><span class="fan-pts">${type === 'win' ? HK_PTS[f].win : HK_PTS[f].zimo}分</span>`;
+            btn.onclick = () => { 
+                selectedFan = f; 
+                document.querySelectorAll('.fan-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                updateFormulaPreview(); 
+            };
+            fanGrid.appendChild(btn);
+        }
+
+        if (type === 'zimo') {
+            document.getElementById('modalTitle').innerText = '自摸結算';
+            document.getElementById('modalActionText').innerText = '自摸';
+            document.getElementById('modalActionText').style.color = '#e67e22';
+            document.getElementById('loserSection').style.display = 'none';
+        } else {
+            document.getElementById('modalTitle').innerText = '食糊結算';
+            document.getElementById('modalActionText').innerText = '食糊';
+            document.getElementById('modalActionText').style.color = 'var(--text-red)';
+            document.getElementById('loserSection').style.display = 'block';
+            const loserDiv = document.getElementById('loserSelectDiv'); 
+            loserDiv.innerHTML = '';
+            for(let i=0; i<4; i++) {
+                if (i !== winnerIdx) {
+                    const btn = document.createElement('button'); btn.className = 'p-btn'; btn.innerText = `${currentEmojis[i]} ${currentNames[i]}`;
+                    btn.onclick = function() {
+                        document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('selected')); 
+                        this.classList.add('selected'); selectedLoser = i; 
+                        updateFormulaPreview(); 
+                    };
+                    loserDiv.appendChild(btn);
+                }
+            }
+        }
+        updateFormulaPreview();
+        document.getElementById('scoreModal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('scoreModal').style.display = 'none'; }
+
+    function updateFormulaPreview() {
+        const div = document.getElementById('formulaDisplay');
+        const ptsData = HK_PTS[selectedFan];
+        if (pendingType === 'win') {
+            if (selectedLoser === -1) { div.innerHTML = "請選擇出衝者"; return; }
+            div.innerHTML = `<div>${selectedFan} 番：食糊</div><div class="score-calc">應付：<span class="highlight">${ptsData.win}</span> 分</div>`;
+        } else {
+            const perPerson = ptsData.zimo / 3;
+            div.innerHTML = `<div>${selectedFan} 番：自摸 (總分 ${ptsData.zimo})</div><div class="score-calc">每家應付：<span class="highlight">${perPerson}</span> 分</div>`;
+        }
+    }
+
+    function submitScore() {
+        const ptsData = HK_PTS[selectedFan];
+        if (pendingType === 'win' && selectedLoser === -1) { alert("請選擇出衝者"); return; }
+        
+        let logMsg = "";
+        if (pendingType === 'zimo') {
+            const perPerson = ptsData.zimo / 3;
+            for (let i = 0; i < 4; i++) {
+                if (i === pendingWinner) continue;
+                scores[i] -= perPerson;
+            }
+            scores[pendingWinner] += ptsData.zimo;
+            logMsg = `🌟 <b>${currentNames[pendingWinner]}</b> 自摸 ${selectedFan}番 (+${ptsData.zimo})`;
+            playerStats[pendingWinner].win++; playerStats[pendingWinner].zimo++;
+        } else {
+            scores[pendingWinner] += ptsData.win;
+            scores[selectedLoser] -= ptsData.win;
+            logMsg = `🔫 <b>${currentNames[pendingWinner]}</b> 食 <b>${currentNames[selectedLoser]}</b> ${selectedFan}番 (+${ptsData.win})`;
+            playerStats[pendingWinner].win++; playerStats[selectedLoser].discard++;
+        }
+        addHistory(logMsg); updateUI(); saveData(); closeModal();
+    }
+
+    function updateUI() {
+        for (let i = 0; i < 4; i++) {
+            let sEl = document.getElementById(`score-${i}`);
+            sEl.innerText = (scores[i] > 0 ? "+" : "") + scores[i];
+            sEl.className = `score-text ${scores[i] < 0 ? 'negative' : (scores[i] > 0 ? 'positive' : '')}`;
+            let card = document.getElementById(`card-${i}`);
+            if (i === currentBanker) card.classList.add('is-banker');
+            else card.classList.remove('is-banker');
+        }
+    }
+
+    function addHistory(msg) {
+        const list = document.getElementById('historyList');
+        if (list.innerHTML.includes("暫無紀錄")) list.innerHTML = '';
+        const time = new Date().toLocaleTimeString('zh-HK', {hour12: false, hour: '2-digit', minute:'2-digit'});
+        list.insertAdjacentHTML('afterbegin', `<div class="history-item"><span class="history-time">${time}</span><span>${msg}</span></div>`);
+    }
+
+    function confirmReset() {
+        if(!confirm("確定要清空目前分數並結算嗎？")) return;
+        const record = {
+            date: new Date().toLocaleString('zh-HK'),
+            players: [...currentNames], emojis: [...currentEmojis], scores: [...scores]
+        };
+        pastGames.unshift(record);
+        scores = [0, 0, 0, 0];
+        playerStats = [{win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}];
+        document.getElementById('historyList').innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">暫無紀錄</div>';
+        updateUI(); saveData(); renderLeaderboards();
+        showToast("已開新局");
+    }
+
+    function renderLeaderboards() {
+        const list = document.getElementById('leaderboardList');
+        if (pastGames.length === 0) { list.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">暫無紀錄</div>'; return; }
+        list.innerHTML = pastGames.map((game, idx) => {
+            let scoreHtml = '';
+            for(let i=0; i<4; i++) {
+                let s = game.scores[i];
+                scoreHtml += `<div>${game.emojis[i]} ${game.players[i]}: <span class="${s>0?'pos':(s<0?'neg':'')}">${s>0?'+':''}${s}</span></div>`;
+            }
+            return `
+            <div class="leaderboard-card">
+                <div style="font-size:12px; color:#999; margin-bottom:10px;">${game.date}</div>
+                <div class="lb-scores">${scoreHtml}</div>
+                <button class="btn-whatsapp" onclick="shareWhatsApp(${idx})"><i class="fa-brands fa-whatsapp"></i> WhatsApp 分享戰績</button>
+            </div>`;
+        }).join('');
+    }
+
+    function clearLeaderboard() {
+        if(confirm("確定刪除所有歷史戰績？此操作無法還原。")) {
+            pastGames = []; saveData(); renderLeaderboards();
+        }
+    }
+
+    function shareWhatsApp(idx) {
+        const game = pastGames[idx];
+        let text = `🀄 *香港麻雀戰績*\n📅 ${game.date}\n----------------\n`;
+        for(let i=0; i<4; i++) {
+            let s = game.scores[i];
+            text += `${game.emojis[i]} ${game.players[i]}: ${s > 0 ? '+' : ''}${s}\n`;
+        }
+        window.location.href = `whatsapp://send?text=${encodeURIComponent(text)}`;
+    }
+
+    window.onload = () => { initEmojiPicker(); loadData(); };
+</script>
+</body>
+</html>
