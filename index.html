@@ -6,12 +6,10 @@
     <title>香港麻雀計分器</title>
 
     <!-- ================= PWA & iOS 主畫面設定 ================= -->
-    <meta name="theme-color" content="#b71c1c">
+    <meta name="theme-color" content="#3c6633">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="香港麻雀">
-    
-    <!-- 讀取本地 icon.png -->
     <link rel="icon" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
 
@@ -19,16 +17,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #fce4ec;
-            --header-bg: #b71c1c; 
+            --bg-color: #f2f5f2;
+            --header-bg: #3c6633; 
             --card-bg: #ffffff;
             --text-dark: #333333;
-            --text-red: #b71c1c;
-            --btn-yellow: #fcd55a;
-            --btn-orange: #ffe0b2;
-            --danger: #dc3545;
+            --text-green: #3c6633;
+            --btn-green-bg: #e6f0e6;
+            --btn-yellow-bg: #f3ca5a;
+            --danger: #d32f2f;
             --danger-bg: #fff0f0;
-            --banker-color: #d32f2f;
             --whatsapp-bg: #25d366;
         }
 
@@ -49,69 +46,71 @@
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;
         }
-        .header h1 { font-size: 18px; font-weight: normal; margin: 0; }
+        .header h1 { font-size: 18px; font-weight: bold; margin: 0; letter-spacing: 1px;}
         .header-btn {
-            background-color: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px;
+            background-color: #d64e4e; color: white; border: none; padding: 6px 14px;
             border-radius: 15px; font-size: 14px; cursor: pointer; font-weight: bold;
         }
-        .header-btn:active { background-color: rgba(255,255,255,0.4); }
+        .header-btn:active { background-color: #b71c1c; }
 
         /* ================= 主內容區 ================= */
         .main-content {
-            flex: 1; position: relative; padding: 8px;
+            flex: 1; position: relative; padding: 10px;
             overflow-y: auto; display: none; 
         }
         .main-content.active { display: flex; flex-direction: column; }
 
         /* ================= 計分主頁面 ================= */
         .cross-layout {
-            display: grid; 
-            grid-template-columns: 1fr 1.3fr 1fr;
-            grid-template-rows: 1fr 1fr 1fr;
-            gap: 8px; width: 100%; flex: 1; 
-            max-width: 600px; margin: 0 auto; min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
         }
+        .row-top { display: flex; justify-content: center; flex: 1; padding-bottom: 8px; min-height: 0;}
+        .row-mid { display: flex; justify-content: space-between; flex: 1.1; gap: 10px; padding-bottom: 8px; min-height: 0;}
+        .row-bottom { display: flex; justify-content: center; flex: 1; min-height: 0;}
+
         .player-card {
-            background: var(--card-bg); border-radius: 12px; border-top: 5px solid var(--header-bg);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
-            padding: 15px 5px 8px 5px; 
-            text-align: center; position: relative;
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            border-top: 10px solid var(--header-bg);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06); 
+            padding: 10px 8px 12px 8px; 
+            text-align: center; 
             display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+            width: 55%; 
+            max-width: 240px;
         }
+        .row-mid .player-card { width: 50%; max-width: none; }
+
         .card-header-area { 
             cursor: pointer; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;
         }
-        .card-top { grid-column: 2; grid-row: 1; }
-        .card-left { grid-column: 1; grid-row: 2; }
-        .card-right { grid-column: 3; grid-row: 2; }
-        .card-bottom { grid-column: 2; grid-row: 3; }
 
         .player-title { 
-            color: #666; font-weight: bold; font-size: clamp(13px, 3.5vw, 16px); margin-bottom: 5px; 
+            color: #555; font-weight: bold; font-size: clamp(14px, 4vw, 16px); margin-bottom: 2px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
         }
         .score-text { 
-            font-size: clamp(32px, 8vh, 60px); 
-            font-weight: 800; color: #1a1a1a; margin: 0; line-height: 1; 
+            font-size: clamp(38px, 9vh, 65px); 
+            font-weight: 800; color: var(--text-green); margin: 0; line-height: 1.1; 
         }
-        .score-text.positive { color: #2e7d32; }
         .score-text.negative { color: var(--danger); }
 
-        .card-actions { display: flex; gap: 5px; width: 100%; }
+        .card-actions { display: flex; gap: 8px; width: 100%; height: 45%; max-height: 80px;}
         .btn-action {
-            flex: 1; padding: 12px 2px; border-radius: 8px; font-weight: bold; font-size: clamp(14px, 4vw, 18px); 
-            border: 1px solid transparent; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #333;
+            flex: 1; border-radius: 10px; font-weight: 900; font-size: clamp(16px, 5vw, 22px); 
+            cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex; justify-content: center; align-items: center; letter-spacing: 2px;
         }
-        .btn-action:active { transform: scale(0.95); }
-        .btn-win { background-color: var(--btn-yellow); }
-        .btn-zimo { background-color: var(--btn-orange); color: #8d6e3f; }
-
-        .banker-badge {
-            position: absolute; top: 0; left: 0; background: var(--banker-color); color: white;
-            font-size: 11px; padding: 3px 8px; border-radius: 0 0 8px 0; font-weight: bold; display: none; box-shadow: 2px 2px 4px rgba(0,0,0,0.1); z-index: 2;
-        }
-        .is-banker { border-top-color: var(--banker-color); border-top-width: 8px; }
-        .is-banker .banker-badge { display: block; }
+        .btn-action:active { transform: scale(0.96); }
+        
+        .btn-zimo { background-color: var(--btn-green-bg); border: 2px solid var(--header-bg); color: var(--header-bg); }
+        .btn-win { background-color: var(--btn-yellow-bg); border: 2px solid transparent; color: #222; }
 
         /* ================= 底部導航 ================= */
         .bottom-nav {
@@ -121,14 +120,19 @@
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #888; font-size: 12px; cursor: pointer; width: 20%; padding: 5px 0;
+            color: #999; font-size: 12px; cursor: pointer; width: 20%; padding: 5px 0;
         }
         .nav-item i { font-size: 22px; margin-bottom: 5px; } 
         .nav-item.active { color: var(--header-bg); font-weight: bold; }
 
+        /* ================= 打骰 & 執位 ================= */
+        .dice-display { display: flex; justify-content: center; gap: 20px; font-size: 60px; margin: 20px 0; color: var(--header-bg); }
+        .dice-sum { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+        .seat-box { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 15px 5px; font-size: 15px; font-weight: bold; color: #333; display: flex; align-items: center; justify-content: center; gap: 8px;}
+
         /* ================= Modal ================= */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: flex-end; z-index: 100;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: flex-end; z-index: 100;
         }
         .modal-content {
             background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; animation: slideUp 0.2s ease-out; max-width: 600px; padding-bottom: env(safe-area-inset-bottom, 20px);
@@ -154,20 +158,44 @@
         }
         .fan-btn .fan-num { font-size: 18px; color: var(--text-dark); }
         .fan-btn .fan-pts { font-size: 12px; color: #999; }
-        .fan-btn.selected { background: #fff5f5; border-color: var(--header-bg); }
+        .fan-btn.selected { background: #f0f5f0; border-color: var(--header-bg); }
         .fan-btn.selected .fan-num { color: var(--header-bg); }
 
-        .formula-display { background: #fff8f8; border: 1px dashed #ffcdd2; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 14px; color: #444; text-align: left; }
-        .formula-display .highlight { font-weight: bold; color: var(--text-red); font-size: 18px;}
-        .formula-display .score-calc { color: #c62828; font-weight: bold; margin-top: 5px; border-top: 1px solid #ffcdd2; padding-top: 5px;}
+        .formula-display { background: #f4f7f4; border: 1px dashed #a5c2a5; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 14px; color: #444; text-align: left; }
+        .formula-display .highlight { font-weight: bold; color: var(--header-bg); font-size: 18px;}
+        .formula-display .score-calc { color: #2e5225; font-weight: bold; margin-top: 5px; border-top: 1px solid #a5c2a5; padding-top: 5px;}
 
         /* ================= 設定 & 其他 ================= */
         .page-content { padding: 15px; max-width: 500px; margin: 0 auto; width: 100%; padding-bottom: 30px;}
         .player-settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
         .player-setting-card { background: white; border-radius: 12px; padding: 15px 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .player-setting-card .p-label { color: var(--text-red); font-weight: bold; font-size: 14px; }
+        .player-setting-card .p-label { color: var(--header-bg); font-weight: bold; font-size: 14px; }
         .player-setting-card .p-emoji { font-size: 40px; line-height: 1; cursor: pointer; }
         .player-setting-card input { background: #f0f0f0; border: none; padding: 10px; border-radius: 8px; text-align: center; font-size: 15px; width: 90%; font-weight: bold; }
+
+        .section-title { font-weight: bold; margin: 25px 0 10px 0; color: var(--header-bg); display: flex; align-items: center; gap: 8px;}
+        
+        /* 自訂分數設定表 (+ / - 按鈕版) */
+        .score-setting-row { display: grid; grid-template-columns: 0.8fr 1.6fr 1.6fr; gap: 6px; margin-bottom: 10px; align-items: center;}
+        .score-setting-header { font-size: 13px; color: #777; text-align: center; font-weight: bold;}
+        .fan-label { text-align: center; font-weight: bold; color: #555; background: #e6e6e6; border-radius: 8px; padding: 8px 4px;}
+        
+        .score-adj-wrap { display: flex; align-items: center; background: white; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; height: 36px;}
+        .score-adj-btn { background: #f0f5f0; border: none; width: 32px; height: 100%; font-weight: bold; font-size: 18px; color: var(--header-bg); cursor: pointer; display: flex; justify-content: center; align-items: center;}
+        .score-adj-btn:active { background: #e0ebe0; }
+        .score-adj-input { flex: 1; border: none; text-align: center; font-weight: bold; font-size: 15px; color: var(--text-dark); width: 100%; min-width: 0; padding: 0;}
+        .score-adj-input:focus { outline: none; background: #fffcf2;}
+        /* 隱藏原生數字輸入框的上下箭頭 */
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* 同步區域 */
+        .sync-box { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .sync-textarea { width: 100%; border: 1px solid #ccc; border-radius: 8px; padding: 10px; font-size: 12px; font-family: monospace; margin-bottom: 10px; resize: none; background: #fafafa;}
+        .sync-btn-group { display: flex; gap: 10px; }
+        .sync-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px;}
+        .btn-copy { background: var(--header-bg); color: white;}
+        .btn-import { background: #555; color: white;}
 
         .danger-zone { background-color: var(--danger-bg); border: 1px solid #f5c6cb; border-radius: 12px; padding: 15px; margin-top: 30px; }
         .danger-btn { width: 100%; background: white; color: var(--danger); border: 1px solid var(--danger); padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 5px; }
@@ -177,7 +205,7 @@
         
         .leaderboard-card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 15px; margin-bottom: 15px; }
         .lb-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; font-size: 14px; font-weight: bold;}
-        .lb-scores span.pos { color: #2e7d32; }
+        .lb-scores span.pos { color: var(--text-green); }
         .lb-scores span.neg { color: var(--danger); }
         .btn-whatsapp { background-color: var(--whatsapp-bg); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
 
@@ -196,64 +224,99 @@
     <!-- P1: 計分主頁面 -->
     <div id="page-score" class="main-content active">
         <div class="cross-layout">
-            <div class="player-card card-top" id="card-3">
-                <div class="banker-badge">莊家</div>
-                <div class="card-header-area" onclick="toggleBanker(3)">
-                    <div class="player-title" id="display-name-3">🐻 北 - 玩家4</div>
-                    <div class="score-text" id="score-3">0</div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn-action btn-win" onclick="openScoreModal(3, 'win')">食糊</button>
-                    <button class="btn-action btn-zimo" onclick="openScoreModal(3, 'zimo')">自摸</button>
-                </div>
-            </div>
-            <div class="player-card card-left" id="card-2">
-                <div class="banker-badge">莊家</div>
-                <div class="card-header-area" onclick="toggleBanker(2)">
-                    <div class="player-title" id="display-name-2">🐼 西 - 玩家3</div>
-                    <div class="score-text" id="score-2">0</div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn-action btn-win" onclick="openScoreModal(2, 'win')">食糊</button>
-                    <button class="btn-action btn-zimo" onclick="openScoreModal(2, 'zimo')">自摸</button>
+            <div class="row-top">
+                <div class="player-card" id="card-3">
+                    <div class="card-header-area">
+                        <div class="player-title" id="display-name-3">🐻 北 - 玩家4</div>
+                        <div class="score-text" id="score-3">0</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-action btn-zimo" onclick="openScoreModal(3, 'zimo')">自摸</button>
+                        <button class="btn-action btn-win" onclick="openScoreModal(3, 'win')">食糊</button>
+                    </div>
                 </div>
             </div>
-            <div class="player-card card-right is-banker" id="card-0">
-                <div class="banker-badge">莊家</div>
-                <div class="card-header-area" onclick="toggleBanker(0)">
-                    <div class="player-title" id="display-name-0">🐯 東 - 玩家1</div>
-                    <div class="score-text" id="score-0">0</div>
+            
+            <div class="row-mid">
+                <div class="player-card" id="card-2">
+                    <div class="card-header-area">
+                        <div class="player-title" id="display-name-2">🐼 西 - 玩家3</div>
+                        <div class="score-text" id="score-2">0</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-action btn-zimo" onclick="openScoreModal(2, 'zimo')">自摸</button>
+                        <button class="btn-action btn-win" onclick="openScoreModal(2, 'win')">食糊</button>
+                    </div>
                 </div>
-                <div class="card-actions">
-                    <button class="btn-action btn-win" onclick="openScoreModal(0, 'win')">食糊</button>
-                    <button class="btn-action btn-zimo" onclick="openScoreModal(0, 'zimo')">自摸</button>
+                
+                <div class="player-card" id="card-0">
+                    <div class="card-header-area">
+                        <div class="player-title" id="display-name-0">🐯 東 - 玩家1</div>
+                        <div class="score-text" id="score-0">0</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-action btn-zimo" onclick="openScoreModal(0, 'zimo')">自摸</button>
+                        <button class="btn-action btn-win" onclick="openScoreModal(0, 'win')">食糊</button>
+                    </div>
                 </div>
             </div>
-            <div class="player-card card-bottom" id="card-1">
-                <div class="banker-badge">莊家</div>
-                <div class="card-header-area" onclick="toggleBanker(1)">
-                    <div class="player-title" id="display-name-1">🐱 南 - 玩家2</div>
-                    <div class="score-text" id="score-1">0</div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn-action btn-win" onclick="openScoreModal(1, 'win')">食糊</button>
-                    <button class="btn-action btn-zimo" onclick="openScoreModal(1, 'zimo')">自摸</button>
+
+            <div class="row-bottom">
+                <div class="player-card" id="card-1">
+                    <div class="card-header-area">
+                        <div class="player-title" id="display-name-1">🐱 南 - 玩家2</div>
+                        <div class="score-text" id="score-1">0</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-action btn-zimo" onclick="openScoreModal(1, 'zimo')">自摸</button>
+                        <button class="btn-action btn-win" onclick="openScoreModal(1, 'win')">食糊</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- P2: 紀錄頁面 -->
+    <!-- P2: 打骰 / 執位頁面 -->
+    <div id="page-dice" class="main-content" style="flex-direction: column; gap: 15px;">
+        <div class="page-content" style="padding: 0; width: 100%; display: flex; flex-direction: column; gap: 15px; height: 100%;">
+            <!-- 打骰區 -->
+            <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center;">
+                <h3 style="color: var(--header-bg);"><i class="fa-solid fa-dice"></i> 打骰子</h3>
+                <div class="dice-display" id="diceDisplay">
+                    <i class="fa-solid fa-dice-one"></i>
+                    <i class="fa-solid fa-dice-two"></i>
+                    <i class="fa-solid fa-dice-three"></i>
+                </div>
+                <div class="dice-sum" id="diceSumStr">總和: -</div>
+                <button class="submit-btn" style="max-width: 250px; margin: 0 auto; padding: 12px;" onclick="rollDice()"><i class="fa-solid fa-rotate-right"></i> 擲骰子</button>
+            </div>
+
+            <!-- 執位區 -->
+            <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; flex: 1;">
+                <h3 style="color: #e67e22; margin-bottom: 15px;"><i class="fa-solid fa-users"></i> 執位抽風</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;" id="seatResults">
+                    <div class="seat-box"><span style="color:#888;">東</span> -</div>
+                    <div class="seat-box"><span style="color:#888;">南</span> -</div>
+                    <div class="seat-box"><span style="color:#888;">西</span> -</div>
+                    <div class="seat-box"><span style="color:#888;">北</span> -</div>
+                </div>
+                <button class="submit-btn" style="background: #e67e22; max-width: 250px; margin: 0 auto 10px auto; padding: 12px;" onclick="drawSeats()"><i class="fa-solid fa-shuffle"></i> 隨機抽東南西北</button>
+                <button id="btnApplySeats" class="submit-btn" style="background: var(--danger); max-width: 250px; margin: 0 auto; padding: 12px; display: none;" onclick="applySeats()"><i class="fa-solid fa-check"></i> 套用並開新局</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- P3: 紀錄頁面 -->
     <div id="page-history" class="main-content">
         <div class="page-content">
-            <h3 style="color: var(--text-red); border-bottom: 2px solid var(--text-red); padding-bottom: 10px; margin-bottom: 10px;">流水帳紀錄</h3>
+            <h3 style="color: var(--header-bg); border-bottom: 2px solid var(--header-bg); padding-bottom: 10px; margin-bottom: 10px;">流水帳紀錄</h3>
             <div class="history-list" id="historyList">
                 <div style="text-align: center; color: #888; padding: 20px;">暫無紀錄</div>
             </div>
         </div>
     </div>
 
-    <!-- P3: 戰績頁面 -->
+    <!-- P4: 戰績頁面 -->
     <div id="page-leaderboard" class="main-content">
         <div class="page-content">
             <h3 style="color: #5d4037; border-bottom: 2px solid #5d4037; padding-bottom: 10px; margin-bottom: 15px;">歷屆完場戰績</h3>
@@ -263,7 +326,7 @@
         </div>
     </div>
 
-    <!-- P4: 設定頁面 -->
+    <!-- P5: 設定頁面 -->
     <div id="page-settings" class="main-content">
         <div class="page-content">
             <div class="player-settings-grid">
@@ -289,10 +352,39 @@
                 </div>
             </div>
 
+            <!-- 分數設定區塊 (+/- 按鈕版) -->
+            <div class="section-title"><i class="fa-solid fa-coins"></i> 番數分數設定 (更改即生效)</div>
+            <div style="background: #f8f9fa; border: 1px solid #ddd; border-radius: 12px; padding: 15px;">
+                <div class="score-setting-row">
+                    <div class="score-setting-header">番數</div>
+                    <div class="score-setting-header">食糊</div>
+                    <div class="score-setting-header">自摸(總數)</div>
+                </div>
+                <div id="scoreSettingsContainer"></div>
+            </div>
+
             <div class="danger-zone">
-                <div style="font-weight: bold; margin-bottom: 10px; color: var(--danger);">危險區域</div>
+                <div style="font-weight: bold; margin-bottom: 10px; color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> 危險區域</div>
                 <button class="danger-btn" onclick="confirmReset()">🧨 清空分數 (開新局)</button>
                 <button class="danger-btn" onclick="clearLeaderboard()">🗑️ 清除所有歷史戰績</button>
+            </div>
+
+            <!-- 數據同步 / 備份區域 -->
+            <div class="section-title"><i class="fa-solid fa-cloud-arrow-up"></i> 跨裝置同步 / 備份</div>
+            <div class="sync-box">
+                <div style="font-size: 13px; color: #666; margin-bottom: 8px;">1. 產生代碼傳送給朋友</div>
+                <textarea id="exportText" class="sync-textarea" rows="2" readonly placeholder="點擊下方按鈕產生代碼..."></textarea>
+                <div class="sync-btn-group" style="margin-bottom: 15px;">
+                    <button class="sync-btn btn-copy" onclick="generateAndCopySyncCode()"><i class="fa-solid fa-copy"></i> 產生並複製代碼</button>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                
+                <div style="font-size: 13px; color: #666; margin-bottom: 8px;">2. 貼上朋友的代碼並匯入</div>
+                <textarea id="importText" class="sync-textarea" rows="2" placeholder="在此貼上同步代碼..."></textarea>
+                <div class="sync-btn-group">
+                    <button class="sync-btn btn-import" onclick="importSyncCode()"><i class="fa-solid fa-download"></i> 匯入代碼</button>
+                </div>
             </div>
         </div>
     </div>
@@ -302,6 +394,10 @@
         <div class="nav-item active" onclick="switchPage('score', this)">
             <i class="fa-solid fa-calculator"></i>
             <span>計分</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('dice', this)">
+            <i class="fa-solid fa-dice"></i>
+            <span>打骰/執位</span>
         </div>
         <div class="nav-item" onclick="switchPage('history', this)">
             <i class="fa-solid fa-list-ol"></i>
@@ -336,7 +432,7 @@
                 <button class="close-btn" onclick="closeModal()">×</button>
             </div>
             
-            <div style="text-align: center; margin-bottom: 15px; font-size: 18px; color: var(--text-red); font-weight: bold;">
+            <div style="text-align: center; margin-bottom: 15px; font-size: 18px; color: var(--header-bg); font-weight: bold;">
                 <span id="modalWinnerName">🐯 玩家1</span> <span id="modalActionText">食糊</span>
             </div>
 
@@ -359,8 +455,8 @@
     <div class="toast" id="toastMsg">已儲存</div>
 
 <script>
-    // 香港麻雀 3-8 番得分表
-    const HK_PTS = {
+    // 預設 香港麻雀 3-8 番得分表
+    const DEFAULT_HK_PTS = {
         3: { win: 8, zimo: 12 },
         4: { win: 16, zimo: 24 },
         5: { win: 24, zimo: 36 },
@@ -369,10 +465,10 @@
         8: { win: 64, zimo: 96 }
     };
 
+    let HK_PTS = JSON.parse(JSON.stringify(DEFAULT_HK_PTS));
     let scores = [0, 0, 0, 0]; 
-    let currentBanker = 0;
-    let playerStats = [{win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}];
     let pastGames = []; 
+    let drawnPlayers = [];
     
     const winds = ['東', '南', '西', '北'];
     let currentNames = ['玩家1', '玩家2', '玩家3', '玩家4'];
@@ -385,6 +481,7 @@
     let editingEmojiIdx = -1;
 
     const animalEmojis = ['🐯','🐱','🐼','🐻','🦁','🐨','🐮','🐷','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🐺','🐗','🐴','🦄','🐢','🐍','🐙','🦑','🦐','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐅','豹','🦓','🦍','🐘','🦛','🦏','🐪','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','鹿','🐕','🐈','🐇','🐿','🦔'];
+    const diceIcons = ['fa-dice-one', 'fa-dice-two', 'fa-dice-three', 'fa-dice-four', 'fa-dice-five', 'fa-dice-six'];
 
     function initEmojiPicker() {
         const grid = document.getElementById('emojiGrid');
@@ -410,22 +507,65 @@
         saveData();
     }
 
+    // 渲染設定頁的分數設定列表
+    function renderScoreSettings() {
+        const container = document.getElementById('scoreSettingsContainer');
+        container.innerHTML = '';
+        for(let f = 3; f <= 8; f++) {
+            container.innerHTML += `
+            <div class="score-setting-row">
+                <div class="fan-label">${f} 番</div>
+                <div class="score-adj-wrap">
+                    <button class="score-adj-btn" onclick="adjCustomScore(${f}, 'win', -1)">-</button>
+                    <input type="number" class="score-adj-input" value="${HK_PTS[f].win}" onchange="updateCustomScore(${f}, 'win', this.value)">
+                    <button class="score-adj-btn" onclick="adjCustomScore(${f}, 'win', 1)">+</button>
+                </div>
+                <div class="score-adj-wrap">
+                    <button class="score-adj-btn" onclick="adjCustomScore(${f}, 'zimo', -1)">-</button>
+                    <input type="number" class="score-adj-input" value="${HK_PTS[f].zimo}" onchange="updateCustomScore(${f}, 'zimo', this.value)">
+                    <button class="score-adj-btn" onclick="adjCustomScore(${f}, 'zimo', 1)">+</button>
+                </div>
+            </div>`;
+        }
+    }
+
+    // 透過加減按鈕調整分數
+    function adjCustomScore(fan, type, delta) {
+        let current = parseInt(HK_PTS[fan][type]) || 0;
+        let newVal = current + delta;
+        if(newVal < 0) newVal = 0; // 不能為負數
+        HK_PTS[fan][type] = newVal;
+        renderScoreSettings(); // 更新 UI
+        saveData();            // 儲存設定
+    }
+
+    // 透過鍵盤直接輸入調整分數
+    function updateCustomScore(fan, type, value) {
+        let val = parseInt(value);
+        if(isNaN(val) || val < 0) val = 0;
+        HK_PTS[fan][type] = val;
+        renderScoreSettings();
+        saveData();
+    }
+
     function saveData() {
-        const data = { scores, currentBanker, currentNames, currentEmojis, playerStats, pastGames, history: document.getElementById('historyList').innerHTML };
-        localStorage.setItem('hkMahjongData', JSON.stringify(data));
+        const data = { 
+            scores, currentNames, currentEmojis, pastGames, HK_PTS, 
+            history: document.getElementById('historyList').innerHTML 
+        };
+        localStorage.setItem('hkMahjongDatav4', JSON.stringify(data));
     }
 
     function loadData() {
-        const saved = localStorage.getItem('hkMahjongData');
+        const saved = localStorage.getItem('hkMahjongDatav4');
         if (saved) {
             try {
                 const data = JSON.parse(saved);
                 scores = data.scores || [0,0,0,0];
-                currentBanker = data.currentBanker || 0;
                 currentNames = data.currentNames || currentNames;
                 currentEmojis = data.currentEmojis || currentEmojis;
-                playerStats = data.playerStats || playerStats;
                 pastGames = data.pastGames || [];
+                if (data.HK_PTS) HK_PTS = data.HK_PTS; // 讀取自訂分數
                 if (data.history) document.getElementById('historyList').innerHTML = data.history;
             } catch (e) { console.error(e); }
         }
@@ -436,6 +576,7 @@
         }
         updateUI();
         renderLeaderboards();
+        renderScoreSettings();
     }
 
     function showToast(msg) {
@@ -448,13 +589,6 @@
         document.getElementById(`page-${pageId}`).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         navElement.classList.add('active');
-    }
-
-    function toggleBanker(index) {
-        currentBanker = index;
-        updateUI();
-        saveData();
-        addHistory(`👑 <b>${currentNames[index]}</b> 成為新莊家`);
     }
 
     function openScoreModal(winnerIdx, type) {
@@ -479,12 +613,12 @@
         if (type === 'zimo') {
             document.getElementById('modalTitle').innerText = '自摸結算';
             document.getElementById('modalActionText').innerText = '自摸';
-            document.getElementById('modalActionText').style.color = '#e67e22';
+            document.getElementById('modalActionText').style.color = '#3c6633';
             document.getElementById('loserSection').style.display = 'none';
         } else {
             document.getElementById('modalTitle').innerText = '食糊結算';
             document.getElementById('modalActionText').innerText = '食糊';
-            document.getElementById('modalActionText').style.color = 'var(--text-red)';
+            document.getElementById('modalActionText').style.color = '#d3a01a';
             document.getElementById('loserSection').style.display = 'block';
             const loserDiv = document.getElementById('loserSelectDiv'); 
             loserDiv.innerHTML = '';
@@ -513,7 +647,7 @@
             if (selectedLoser === -1) { div.innerHTML = "請選擇出衝者"; return; }
             div.innerHTML = `<div>${selectedFan} 番：食糊</div><div class="score-calc">應付：<span class="highlight">${ptsData.win}</span> 分</div>`;
         } else {
-            const perPerson = ptsData.zimo / 3;
+            const perPerson = Math.ceil(ptsData.zimo / 3); // 處理除不盡的情況
             div.innerHTML = `<div>${selectedFan} 番：自摸 (總分 ${ptsData.zimo})</div><div class="score-calc">每家應付：<span class="highlight">${perPerson}</span> 分</div>`;
         }
     }
@@ -524,19 +658,19 @@
         
         let logMsg = "";
         if (pendingType === 'zimo') {
-            const perPerson = ptsData.zimo / 3;
+            const perPerson = Math.ceil(ptsData.zimo / 3);
+            let totalEarned = 0;
             for (let i = 0; i < 4; i++) {
                 if (i === pendingWinner) continue;
                 scores[i] -= perPerson;
+                totalEarned += perPerson;
             }
-            scores[pendingWinner] += ptsData.zimo;
-            logMsg = `🌟 <b>${currentNames[pendingWinner]}</b> 自摸 ${selectedFan}番 (+${ptsData.zimo})`;
-            playerStats[pendingWinner].win++; playerStats[pendingWinner].zimo++;
+            scores[pendingWinner] += totalEarned;
+            logMsg = `🌟 <b>${currentNames[pendingWinner]}</b> 自摸 ${selectedFan}番 (+${totalEarned})`;
         } else {
             scores[pendingWinner] += ptsData.win;
             scores[selectedLoser] -= ptsData.win;
             logMsg = `🔫 <b>${currentNames[pendingWinner]}</b> 食 <b>${currentNames[selectedLoser]}</b> ${selectedFan}番 (+${ptsData.win})`;
-            playerStats[pendingWinner].win++; playerStats[selectedLoser].discard++;
         }
         addHistory(logMsg); updateUI(); saveData(); closeModal();
     }
@@ -545,10 +679,7 @@
         for (let i = 0; i < 4; i++) {
             let sEl = document.getElementById(`score-${i}`);
             sEl.innerText = (scores[i] > 0 ? "+" : "") + scores[i];
-            sEl.className = `score-text ${scores[i] < 0 ? 'negative' : (scores[i] > 0 ? 'positive' : '')}`;
-            let card = document.getElementById(`card-${i}`);
-            if (i === currentBanker) card.classList.add('is-banker');
-            else card.classList.remove('is-banker');
+            sEl.className = `score-text ${scores[i] < 0 ? 'negative' : ''}`;
         }
     }
 
@@ -559,6 +690,63 @@
         list.insertAdjacentHTML('afterbegin', `<div class="history-item"><span class="history-time">${time}</span><span>${msg}</span></div>`);
     }
 
+    // ================= 打骰及執位 =================
+    function rollDice() {
+        const display = document.getElementById('diceDisplay'); const sumText = document.getElementById('diceSumStr');
+        display.style.opacity = '0.5'; let counter = 0;
+        let interval = setInterval(() => {
+            let total = 0; let html = '';
+            for(let i=0; i<3; i++) { let v = Math.floor(Math.random() * 6); html += `<i class="fa-solid ${diceIcons[v]}"></i>`; total += (v + 1); }
+            display.innerHTML = html; sumText.innerText = `總和: ${total}`;
+            counter++; if(counter > 10) { clearInterval(interval); display.style.opacity = '1'; }
+        }, 50);
+    }
+
+    function drawSeats() {
+        let pool = [];
+        for(let i=0; i<4; i++) pool.push({name: currentNames[i], emoji: currentEmojis[i]});
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        drawnPlayers = pool;
+        
+        let html = '';
+        for(let i=0; i<4; i++) {
+            html += `<div class="seat-box"><span style="color:#888;">${winds[i]}</span> &nbsp; ${pool[i].emoji} ${pool[i].name}</div>`;
+        }
+        document.getElementById('seatResults').innerHTML = html;
+        document.getElementById('btnApplySeats').style.display = 'flex';
+    }
+
+    function applySeats() {
+        if(drawnPlayers.length !== 4) return;
+        if(!confirm("套用新座位將會清空目前所有分數，並重新開始新局！確定嗎？")) return;
+        
+        for(let i=0; i<4; i++) {
+            currentNames[i] = drawnPlayers[i].name;
+            currentEmojis[i] = drawnPlayers[i].emoji;
+            document.getElementById(`set-name-${i}`).value = currentNames[i];
+            document.getElementById(`set-emoji-btn-${i}`).innerText = currentEmojis[i];
+            document.getElementById(`display-name-${i}`).innerText = `${currentEmojis[i]} ${winds[i]} - ${currentNames[i]}`;
+        }
+        
+        scores = [0, 0, 0, 0]; 
+        document.getElementById('historyList').innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">暫無紀錄</div>';
+        
+        updateUI(); saveData();
+        document.getElementById('seatResults').innerHTML = `
+            <div class="seat-box"><span style="color:#888;">東</span> -</div>
+            <div class="seat-box"><span style="color:#888;">南</span> -</div>
+            <div class="seat-box"><span style="color:#888;">西</span> -</div>
+            <div class="seat-box"><span style="color:#888;">北</span> -</div>`;
+        document.getElementById('btnApplySeats').style.display = 'none';
+        
+        switchPage('score', document.querySelector('.nav-item:first-child')); 
+        showToast("已套用新座位並開新局");
+    }
+
+    // ================= 完場結算 =================
     function confirmReset() {
         if(!confirm("確定要清空目前分數並結算嗎？")) return;
         const record = {
@@ -567,7 +755,6 @@
         };
         pastGames.unshift(record);
         scores = [0, 0, 0, 0];
-        playerStats = [{win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}, {win:0, zimo:0, discard:0}];
         document.getElementById('historyList').innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">暫無紀錄</div>';
         updateUI(); saveData(); renderLeaderboards();
         showToast("已開新局");
@@ -605,6 +792,53 @@
             text += `${game.emojis[i]} ${game.players[i]}: ${s > 0 ? '+' : ''}${s}\n`;
         }
         window.location.href = `whatsapp://send?text=${encodeURIComponent(text)}`;
+    }
+
+    // ================= 跨裝置同步 / 備份 =================
+    function generateAndCopySyncCode() {
+        saveData(); // 確保資料是最新的
+        const rawData = localStorage.getItem('hkMahjongDatav4');
+        if(!rawData) return alert("沒有資料可供同步");
+        
+        // 將 JSON 編碼為 Base64 方便複製傳送
+        const encodedData = btoa(encodeURIComponent(rawData));
+        const exportTextarea = document.getElementById('exportText');
+        exportTextarea.value = encodedData;
+        
+        // 複製到剪貼簿
+        exportTextarea.select();
+        exportTextarea.setSelectionRange(0, 99999); // 支援手機版
+        try {
+            document.execCommand("copy");
+            showToast("代碼已複製，可貼上傳送給朋友！");
+        } catch(e) {
+            alert("複製失敗，請手動全選文字並複製。");
+        }
+    }
+
+    function importSyncCode() {
+        const code = document.getElementById('importText').value.trim();
+        if(!code) return alert("請先貼上朋友傳送的代碼");
+        
+        if(confirm("警告：匯入新代碼將會覆蓋你當前所有的分數和歷史紀錄，確定繼續嗎？")) {
+            try {
+                // 解碼 Base64 並測試是否為有效 JSON
+                const decodedData = decodeURIComponent(atob(code));
+                JSON.parse(decodedData); 
+                
+                // 儲存並重新載入
+                localStorage.setItem('hkMahjongDatav4', decodedData);
+                loadData();
+                document.getElementById('importText').value = '';
+                showToast("數據匯入成功！");
+                
+                // 跳轉回計分主頁面
+                switchPage('score', document.querySelector('.nav-item')); 
+            } catch(e) {
+                alert("無效的代碼，匯入失敗。請確定代碼完整無缺！");
+                console.error("Import error:", e);
+            }
+        }
     }
 
     window.onload = () => { initEmojiPicker(); loadData(); };
